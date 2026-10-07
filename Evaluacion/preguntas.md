@@ -3,87 +3,39 @@
 Este documento contiene dos bloques de preguntas:
 
 
-# Parte 1 — Preguntas Iniciales
+# Parte 1 — Rompehielo y reflexión inicial
 
-Estas preguntas son intencionalmente sencillas. Su objetivo es introducir el tema y conocer qué tanto saben los participantes antes de comenzar.
+Estas preguntas se realizan de forma abierta al inicio del mini-taller. Su objetivo es partir de la experiencia previa de los participantes y llevarlos a reflexionar sobre la diferencia entre simulación y emulación.
 
 ## Pregunta 1
 
-**¿Qué significa depurar un programa?**
+**¿Qué herramientas de simulación han usado?**
 
-A. Cambiar el lenguaje de programación.  
-B. Buscar y analizar errores en la ejecución de un programa.  
-C. Instalar un sistema operativo.  
-D. Convertir código C en Python.
-
-**Respuesta correcta:** B
-
-**Justificación:**  
-La depuración consiste en observar y controlar la ejecución de un programa para identificar y comprender errores.
+La idea es que los participantes mencionen herramientas que ya conozcan o hayan utilizado durante la carrera.
 
 ---
 
 ## Pregunta 2
 
-**¿Cuál de estas herramientas se utiliza principalmente como depurador?**
+**¿Qué estaban simulando con ellas?**
 
-A. QEMU  
-B. GDB  
-C. Git  
-D. GCC
-
-**Respuesta correcta:** B
-
-**Justificación:**  
-GDB es una herramienta de depuración que permite controlar la ejecución e inspeccionar variables, memoria, registros y otros elementos del programa.
+Esta pregunta busca que identifiquen qué parte del sistema representaban con esas herramientas: circuitos, sistemas de control, procesadores, hardware digital, redes u otros sistemas.
 
 ---
 
 ## Pregunta 3
 
-**En el contexto de sistemas embebidos, el Target es:**
+**¿Eso es lo mismo que emular hardware?**
 
-A. La computadora donde programamos.  
-B. El sistema o procesador donde se ejecutará el programa objetivo.  
-C. El editor de código.  
-D. El repositorio de GitHub.
+No se responde inmediatamente. La intención es generar la duda y utilizarla como transición hacia el tema principal del mini-taller.
 
-**Respuesta correcta:** B
+### Transición
 
-**Justificación:**  
-El Target es la plataforma objetivo para la cual está diseñado y compilado el programa.
+> **Hoy vamos a ver por qué no.**
 
----
+A continuación se muestra una demostración práctica: un juego antiguo ejecutándose dentro de QEMU.
 
-## Pregunta 4
-
-**¿Para qué sirve un breakpoint?**
-
-A. Para borrar una función.  
-B. Para detener temporalmente la ejecución en un punto determinado.  
-C. Para reiniciar el procesador.  
-D. Para compilar el programa.
-
-**Respuesta correcta:** B
-
-**Justificación:**  
-Un breakpoint permite detener la ejecución en una función o línea específica para inspeccionar el estado del programa.
-
----
-
-## Pregunta 5
-
-**¿Cuál de estas opciones describe mejor a QEMU?**
-
-A. Es únicamente un compilador de C.  
-B. Es una herramienta que puede emular una plataforma o arquitectura objetivo.  
-C. Es un editor de texto.  
-D. Es un sistema de control de versiones.
-
-**Respuesta correcta:** B
-
-**Justificación:**  
-QEMU puede proporcionar un entorno emulado donde se ejecuta software diseñado para una arquitectura objetivo.
+La idea es que, a partir de esta experiencia, se introduzca la diferencia entre simulación y emulación y se analice qué está haciendo QEMU para permitir que software diseñado para otra plataforma pueda ejecutarse en la computadora actual.
 
 ---
 
