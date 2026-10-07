@@ -13,13 +13,11 @@ Estas preguntas se realizan de forma abierta al inicio del mini-taller. Su objet
 
 La idea es que los participantes mencionen herramientas que ya conozcan o hayan utilizado durante la carrera.
 
-
 ## Pregunta 2
 
 **¿Qué estaban simulando con ellas?**
 
 Esta pregunta busca que identifiquen qué parte del sistema representaban con esas herramientas: circuitos, sistemas de control, procesadores, hardware digital, redes u otros sistemas.
-
 
 ## Pregunta 3
 
@@ -34,6 +32,7 @@ No se responde inmediatamente. La intención es generar la duda y utilizarla com
 A continuación se muestra una demostración práctica: un juego antiguo ejecutándose dentro de QEMU.
 
 La idea es que, a partir de esta experiencia, se introduzca la diferencia entre simulación y emulación y se analice qué está haciendo QEMU para permitir que software diseñado para otra plataforma pueda ejecutarse en la computadora actual.
+
 
 ---
 
