@@ -13,7 +13,6 @@ Estas preguntas se realizan de forma abierta al inicio del mini-taller. Su objet
 
 La idea es que los participantes mencionen herramientas que ya conozcan o hayan utilizado durante la carrera.
 
----
 
 ## Pregunta 2
 
@@ -21,7 +20,6 @@ La idea es que los participantes mencionen herramientas que ya conozcan o hayan 
 
 Esta pregunta busca que identifiquen qué parte del sistema representaban con esas herramientas: circuitos, sistemas de control, procesadores, hardware digital, redes u otros sistemas.
 
----
 
 ## Pregunta 3
 
