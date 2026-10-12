@@ -40,7 +40,7 @@ La idea es que, a partir de esta experiencia, se introduzca la diferencia entre 
 
 Estas preguntas requieren aplicar los conceptos explicados durante el mini-taller.
 
-## Pregunta 6
+## Pregunta 1
 
 **¿Cuál es la diferencia principal entre QEMU y GDB dentro de una sesión de depuración?**
 
@@ -56,7 +56,7 @@ QEMU proporciona la plataforma emulada donde se ejecuta el software, mientras qu
 
 ---
 
-## Pregunta 7
+## Pregunta 2
 
 **¿Cuál es la diferencia técnica entre `gdbstub` y `gdbserver`?**
 
@@ -65,12 +65,13 @@ B. `gdbserver` está integrado siempre en QEMU y `gdbstub` se instala en Linux.
 C. Ambos son exactamente la misma herramienta.
 D. `gdbstub` compila el código y `gdbserver` lo ejecuta.
 
+
 **Respuesta correcta:** A
 
 **Justificación:**  
 `gdbstub` forma parte de QEMU y permite interactuar con la CPU emulada. `gdbserver`, en cambio, es un programa que se ejecuta dentro de un sistema operativo Target para controlar un proceso específico.
 
-## Pregunta 8
+## Pregunta 3
 
 **¿Cuál es la función principal de la opción `-g` al compilar un programa que será depurado con GDB?**
 
@@ -86,7 +87,7 @@ La opción `-g` agrega símbolos de depuración al ejecutable. Estos permiten qu
 
 ---
 
-## Pregunta 9
+## Pregunta 4
 
 **Al iniciar QEMU para una sesión de depuración, ¿qué función cumplen las opciones `-s` y `-S`?**
 
@@ -102,7 +103,7 @@ La opción `-s` habilita el servidor de depuración integrado de QEMU utilizando
 
 ---
 
-## Pregunta 10
+## Pregunta 5
 
 **Si un programa funciona correctamente en QEMU, ¿cuál de las siguientes afirmaciones es correcta?**
 
