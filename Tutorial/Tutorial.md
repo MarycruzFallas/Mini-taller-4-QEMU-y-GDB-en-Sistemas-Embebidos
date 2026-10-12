@@ -46,18 +46,293 @@ python3 -c "import numpy; print(numpy.__version__)"
 
 ## Archivo utilizado
 
-El ejercicio utiliza:
+Crear el archivo del ejercicio:
 
-```text
-control_acceso_vision.py
+```bash
+nano control_acceso_vision.py
 ```
 
-Para ejecutarlo:
+Pegar el siguiente código completo:
+
+```python
+import cv2
+import numpy as np
+
+
+POS_ROJO = (50, 60)
+POS_VERDE = (50, 150)
+POS_AMARILLO = (50, 240)
+
+
+def crear_panel(estado):
+    """
+    Genera una imagen sintética de un panel de acceso.
+
+    estado:
+        0 -> rojo
+        1 -> verde
+        2 -> amarillo
+    """
+
+    imagen = np.zeros((300, 100, 3), dtype=np.uint8)
+    imagen[:] = (35, 35, 35)
+
+    cv2.rectangle(
+        imagen,
+        (10, 10),
+        (90, 290),
+        (70, 70, 70),
+        -1
+    )
+
+    luces = [
+        (POS_ROJO, (0, 0, 220)),
+        (POS_VERDE, (0, 200, 0)),
+        (POS_AMARILLO, (0, 210, 210)),
+    ]
+
+    for indice, (posicion, color) in enumerate(luces):
+
+        if indice == estado:
+            cv2.circle(
+                imagen,
+                posicion,
+                28,
+                color,
+                -1
+            )
+
+            cv2.circle(
+                imagen,
+                posicion,
+                30,
+                (200, 200, 200),
+                1
+            )
+
+        else:
+            cv2.circle(
+                imagen,
+                posicion,
+                28,
+                (25, 25, 25),
+                -1
+            )
+
+    return imagen
+
+
+def analizar_panel(imagen):
+    """
+    Analiza el panel y determina la acción del sistema.
+    """
+
+    hsv = cv2.cvtColor(
+        imagen,
+        cv2.COLOR_BGR2HSV
+    )
+
+    # Rangos HSV utilizados por el detector
+    # Estos valores contienen un error intencional.
+    rango_rojo_bajo = np.array([35, 100, 100])
+    rango_rojo_alto = np.array([85, 255, 255])
+
+    rango_verde_bajo = np.array([0, 100, 100])
+    rango_verde_alto = np.array([10, 255, 255])
+
+    rango_amarillo_bajo = np.array([20, 100, 100])
+    rango_amarillo_alto = np.array([35, 255, 255])
+
+    # Crear máscaras
+    mascara_rojo = cv2.inRange(
+        hsv,
+        rango_rojo_bajo,
+        rango_rojo_alto
+    )
+
+    mascara_verde = cv2.inRange(
+        hsv,
+        rango_verde_bajo,
+        rango_verde_alto
+    )
+
+    mascara_amarillo = cv2.inRange(
+        hsv,
+        rango_amarillo_bajo,
+        rango_amarillo_alto
+    )
+
+    # Contar píxeles detectados
+    pixeles_rojo = cv2.countNonZero(
+        mascara_rojo
+    )
+
+    pixeles_verde = cv2.countNonZero(
+        mascara_verde
+    )
+
+    pixeles_amarillo = cv2.countNonZero(
+        mascara_amarillo
+    )
+
+    # Lógica de decisión
+    # Esta sección contiene un segundo error intencional.
+    if pixeles_rojo > 0:
+        return "ACCESO DENEGADO", pixeles_rojo
+
+    elif pixeles_verde > 0:
+        return "ACCESO PERMITIDO", pixeles_verde
+
+    elif pixeles_amarillo > 0:
+        return "REVISIÓN", pixeles_amarillo
+
+    else:
+        return "SEÑAL DESCONOCIDA", 0
+
+
+def guardar_imagen(imagen, nombre):
+    ruta = f"/tmp/{nombre}.png"
+
+    cv2.imwrite(
+        ruta,
+        imagen
+    )
+
+    print(
+        f"Imagen guardada: {ruta}"
+    )
+
+
+def main():
+
+    print("=" * 60)
+    print(" SISTEMA DE CONTROL DE ACCESO")
+    print("=" * 60)
+
+    # Caso adicional:
+    # señal verde con ruido rojo
+    verde_con_ruido = crear_panel(1).copy()
+
+    for fila, columna in [
+        (15, 15),
+        (15, 16),
+        (15, 17)
+    ]:
+        verde_con_ruido[fila, columna] = (
+            0,
+            0,
+            200
+        )
+
+    casos = [
+        (
+            crear_panel(0),
+            "ACCESO DENEGADO",
+            "Tarjeta rechazada",
+            "acceso_rojo"
+        ),
+
+        (
+            crear_panel(1),
+            "ACCESO PERMITIDO",
+            "Tarjeta autorizada",
+            "acceso_verde"
+        ),
+
+        (
+            crear_panel(2),
+            "REVISIÓN",
+            "Validación pendiente",
+            "acceso_amarillo"
+        ),
+
+        (
+            verde_con_ruido,
+            "ACCESO PERMITIDO",
+            "Tarjeta autorizada + ruido",
+            "acceso_verde_ruido"
+        ),
+    ]
+
+    correctos = 0
+
+    for (
+        imagen,
+        esperado,
+        descripcion,
+        archivo
+    ) in casos:
+
+        guardar_imagen(
+            imagen,
+            archivo
+        )
+
+        resultado, pixeles = analizar_panel(
+            imagen
+        )
+
+        correcto = resultado == esperado
+
+        simbolo = (
+            "✓"
+            if correcto
+            else "✗"
+        )
+
+        print(
+            f"{simbolo} "
+            f"{descripcion:<28} "
+            f"Esperado: {esperado:<18} "
+            f"Resultado: {resultado:<18} "
+            f"({pixeles} px)"
+        )
+
+        if correcto:
+            correctos += 1
+
+    print()
+
+    print("-" * 60)
+
+    print(
+        f"Resultado final: "
+        f"{correctos}/{len(casos)} "
+        f"pruebas correctas"
+    )
+
+    if correctos < len(casos):
+
+        print()
+        print(
+            "El sistema presenta errores."
+        )
+
+        print(
+            "Utiliza pdb para investigar "
+            "qué está ocurriendo."
+        )
+
+    print("=" * 60)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Guardar el archivo con:
+
+```text
+Ctrl + O
+Enter
+Ctrl + X
+```
+
+Luego ejecutarlo con:
 
 ```bash
 python3 control_acceso_vision.py
 ```
-
 ---
 
 # 1. Observar el problema
