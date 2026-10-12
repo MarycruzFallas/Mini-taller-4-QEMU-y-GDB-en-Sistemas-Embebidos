@@ -146,38 +146,374 @@ socat -v UDP4-RECVFROM:5000,fork UDP4-SENDTO:${VIGILANTE_IP}:5000
 gst-launch-1.0 -v   videotestsrc is-live=true pattern=ball !   video/x-raw,width=1280,height=720,framerate=30/1 !   x264enc tune=zerolatency bitrate=2000 speed-preset=veryfast key-int-max=30 !   h264parse !   rtph264pay pt=96 config-interval=1 !   udpsink host=10.0.2.2 port=5000 sync=false
 ```
 
-## Qué mostrar en clase
+# Ejecución de la demostración en clase
 
-Terminal 1 — QEMU:
-- `uname -m`
-- `ip a`
-- `gst-launch-1.0 --version`
-- explicar Host, Guest y Target.
+Esta sección contiene únicamente los pasos que deben ejecutarse durante la demostración en vivo.
 
-Terminal 2 — `socat`:
-- explicar el puente `10.0.2.2:5000 → vigilante:5000`.
+La preparación de la imagen de Raspberry Pi, instalación de dependencias, configuración de repositorios y creación del usuario se realizan previamente y no forman parte de la ejecución en clase.
 
-Terminal 3 — Docker:
-- `docker compose ps`
-- mostrar FPS de `vigilante`
-- recalcar que `emisor` Docker está detenido y el stream viene de QEMU.
+La demostración utiliza tres terminales en el Host Ubuntu:
 
-## Cierre
+- Terminal 1: Docker / contenedor `vigilante`.
+- Terminal 2: QEMU / Raspberry Pi 3B emulada.
+- Terminal 3: puente UDP con `socat`.
 
-Guest:
+---
+
+## 1. Levantar el receptor Docker
+
+En una terminal del Host Ubuntu:
+
+```bash
+cd ~/Project_1_Embebidos
+docker compose up -d vigilante
+docker compose ps
+```
+
+Verificar que el servicio `vigilante` aparezca en estado activo.
+
+El contenedor `vigilante` funciona como receptor del stream de video.
+
+Durante esta demostración no se utiliza el emisor Docker, debido a que el emisor será la Raspberry Pi emulada con QEMU.
+
+Para visualizar los datos recibidos:
+
+```bash
+docker compose logs -f vigilante
+```
+
+Mantener esta terminal abierta.
+
+---
+
+## 2. Arrancar la Raspberry Pi 3B emulada
+
+Abrir una segunda terminal en el Host Ubuntu:
+
+```bash
+cd ~/Mini-taller-4-QEMU-y-GDB-en-Sistemas-Embebidos
+./Demo/run_qemu_rpi.sh
+```
+
+Esperar hasta que el sistema termine de arrancar.
+
+Cuando aparezca el login:
+
+```text
+raspberrypi login:
+```
+
+Ingresar:
+
+```text
+pi
+```
+
+Contraseña:
+
+```text
+raspberry
+```
+
+Al finalizar el login debe aparecer un prompt similar a:
+
+```text
+pi@raspberrypi:~ $
+```
+
+A partir de este punto, los siguientes comandos se ejecutan dentro del Guest emulado.
+
+---
+
+## 3. Verificar la arquitectura del Guest
+
+Dentro de la Raspberry Pi emulada:
+
+```bash
+uname -m
+```
+
+Salida esperada:
+
+```text
+aarch64
+```
+
+Esto permite verificar que el sistema ejecutado dentro de QEMU utiliza arquitectura ARM64, aunque el Host físico utiliza arquitectura x86-64.
+
+---
+
+## 4. Verificar la interfaz de red virtual
+
+Dentro del Guest:
+
+```bash
+ip a
+```
+
+Buscar la interfaz:
+
+```text
+usb0
+```
+
+La dirección esperada es:
+
+```text
+10.0.2.15/24
+```
+
+Esto corresponde a la interfaz de red virtual de la Raspberry Pi emulada.
+
+---
+
+## 5. Verificar comunicación Guest → Host
+
+Dentro del Guest:
+
+```bash
+ping -c 3 10.0.2.2
+```
+
+Salida esperada:
+
+```text
+3 packets transmitted
+3 received
+0% packet loss
+```
+
+Dentro de esta configuración de red de QEMU:
+
+```text
+Guest Raspberry Pi → 10.0.2.15
+Host Ubuntu        → 10.0.2.2
+```
+
+Este paso verifica que la Raspberry Pi emulada puede comunicarse correctamente con el Host Ubuntu.
+
+---
+
+## 6. Crear el puente UDP hacia Docker
+
+Abrir una tercera terminal en el Host Ubuntu:
+
+```bash
+cd ~/Mini-taller-4-QEMU-y-GDB-en-Sistemas-Embebidos
+./Demo/bridge_udp.sh
+```
+
+El script obtiene automáticamente la dirección IP actual del contenedor `vigilante` y ejecuta el puente UDP mediante `socat`.
+
+Debe mostrarse una salida similar a:
+
+```text
+vigilante=172.19.0.2:5000
+```
+
+La dirección exacta del contenedor puede cambiar entre ejecuciones.
+
+El flujo en este punto es:
+
+```text
+Raspberry Pi emulada
+        |
+        | RTP/UDP
+        v
+10.0.2.2:5000
+Host Ubuntu
+        |
+        | socat
+        v
+Docker vigilante:5000
+```
+
+Mantener esta terminal abierta.
+
+---
+
+## 7. Iniciar el emisor GStreamer en la Raspberry Pi emulada
+
+Volver a la terminal de QEMU.
+
+Dentro del Guest ejecutar:
+
+```bash
+gst-launch-1.0 -v \
+  videotestsrc is-live=true pattern=ball ! \
+  video/x-raw,width=1280,height=720,framerate=30/1 ! \
+  x264enc tune=zerolatency bitrate=2000 speed-preset=veryfast key-int-max=30 ! \
+  h264parse ! \
+  rtph264pay pt=96 config-interval=1 ! \
+  udpsink host=10.0.2.2 port=5000 sync=false
+```
+
+Este pipeline realiza las siguientes operaciones:
+
+```text
+videotestsrc
+      |
+      v
+Video 1280x720 @ 30 FPS
+      |
+      v
+Codificación H.264
+      |
+      v
+Encapsulado RTP
+      |
+      v
+Transmisión UDP
+      |
+      v
+10.0.2.2:5000
+```
+
+La Raspberry Pi emulada funciona ahora como el emisor del sistema.
+
+---
+
+## 8. Verificar recepción en Docker
+
+Volver a la terminal donde se están mostrando los logs de `vigilante`.
+
+Se deben observar estadísticas del stream recibido.
+
+Durante las pruebas realizadas se obtuvo un comportamiento similar a:
+
+```text
+rendered: ...
+dropped: 0
+average: ~29 FPS
+```
+
+Esto confirma que el video generado dentro de la Raspberry Pi ARM64 emulada:
+
+```text
+Raspberry Pi emulada
+        |
+        v
+GStreamer
+        |
+        v
+H.264 sobre RTP/UDP
+        |
+        v
+Red virtual de QEMU
+        |
+        v
+Host Ubuntu
+        |
+        v
+socat
+        |
+        v
+Docker vigilante
+```
+
+fue recibido y decodificado correctamente.
+
+La fuente fue configurada para transmitir a 30 FPS y durante la validación se obtuvo un promedio cercano a 29 FPS, sin frames descartados.
+
+El objetivo de esta prueba no es realizar un benchmark exacto de una Raspberry Pi física, sino validar la comunicación e integración entre un sistema ARM emulado y servicios ejecutándose en el Host.
+
+---
+
+# Cierre de la demostración
+
+## 9. Detener GStreamer
+
+En la terminal de la Raspberry Pi emulada:
+
+```text
+Ctrl + C
+```
+
+---
+
+## 10. Apagar el Guest
+
+Dentro de la Raspberry Pi emulada:
 
 ```bash
 sudo poweroff
 ```
 
-Host:
+Esperar hasta que QEMU finalice correctamente.
+
+---
+
+## 11. Detener `socat`
+
+En la terminal donde se ejecutó:
 
 ```bash
+./Demo/bridge_udp.sh
+```
+
+presionar:
+
+```text
+Ctrl + C
+```
+
+---
+
+## 12. Detener Docker
+
+En el Host Ubuntu:
+
+```bash
+cd ~/Project_1_Embebidos
 docker compose down
 ```
 
-La demo quedó validada con el flujo:
+---
+
+# Flujo completo validado
+
+La demostración implementa el siguiente recorrido:
 
 ```text
-QEMU → Raspberry Pi 3B → Linux ARM64 → GStreamer → RTP/UDP → Host → socat → Docker → vigilante
+Laptop Ubuntu
+    |
+    v
+QEMU
+    |
+    v
+Raspberry Pi 3B emulada
+ARM64 / Debian Bullseye
+    |
+    v
+GStreamer
+    |
+    v
+H.264 + RTP/UDP
+    |
+    v
+Red virtual de QEMU
+    |
+    v
+Host Ubuntu
+    |
+    v
+socat
+    |
+    v
+Docker
+    |
+    v
+vigilante
+    |
+    v
+Recepción + decodificación + medición de FPS
+```
+
+Resultados observados durante la validación:
+
+```text
+Comunicación Guest → Host: funcional
+Stream RTP/H.264: recibido correctamente
+Frames descartados: 0
+FPS promedio: aproximadamente 29 FPS
 ```
