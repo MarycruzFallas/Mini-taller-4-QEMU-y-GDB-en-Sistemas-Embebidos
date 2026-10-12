@@ -1,4 +1,4 @@
-# Tutorial: Depuración con `pdb`
+# Tutorial: Depuración
 ## Sistema de control de acceso visual
 
 ## Objetivo
